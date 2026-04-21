@@ -1,0 +1,44 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Configured debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/a.exe",
+            "args": [
+                //CHANGE: Add args for debugging if needed
+            ],
+            "stopAtEntry": false, 
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "windows": {
+                "program": "${workspaceFolder}/a.exe"
+            },
+
+            "linux": {
+                "program": "${workspaceRoot}/build/${workspaceFolderBasename}"
+            },
+
+            "osx": {
+                "program": "${workspaceRoot}/build/${workspaceFolderBasename}"
+            }
+
+            
+        }
+    ]
+}
