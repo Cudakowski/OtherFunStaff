@@ -63,9 +63,9 @@ public:
     Board(int bombCountP, int rows, int cols): bombCount{bombCountP}, dim{rows,cols}, uncoveredCount{}
     {
         if(bombCount > dim.row*dim.col )
-    {
-        throw std::runtime_error("more bombs than board spaces");
-    }
+        {
+            throw std::runtime_error("more bombs than board spaces");
+        }
 
     b = std::vector<std::vector<int>>(dim.row,std::vector<int>(dim.col,0));
 
@@ -93,6 +93,7 @@ public:
                             rowT>=0   &&
                             colT<dim.col &&
                             colT>=0   &&
+                            (rowT != row || colT != col) &&
                             b[rowT][colT]==9)
                                 count++;
                 
@@ -114,6 +115,12 @@ public:
     int getCols()const{return dim.col;}
     Point getDimensions()const{return dim;}
     int getBombCount()const{return bombCount;}
+
+    void addUncovered(int add){ uncoveredCount+=add;}
+    bool czyWygrana()const 
+    {
+        return uncoveredCount+bombCount==dim.row*dim.col;
+    }
 };
 
 
@@ -168,6 +175,7 @@ Point getInput()
         std::cin >> a>>b;
         m.row=a[0]-'A';
         m.col=std::stoi(b);
+        std::cout<<"Test: "<<a<<" ___ "<<b<<'\n';
         if(m.row>=0&&m.col>=0)
             return m;
         std::cout<<"Zle dane\n";
@@ -178,7 +186,11 @@ Point getInput()
 void uncoverTile(Board &b,int row, int col)
 {
     if(b[row][col]>=10)
+    {
         b[row][col]-=10;
+        
+    }
+    
 }
 
 void uncoverBoard(Board &b)
@@ -188,29 +200,42 @@ void uncoverBoard(Board &b)
             uncoverTile(b,row,col);
 }
 
-void updateTile(Board &b,int row, int col)
+int updateTile(Board &b,int row, int col)
 {
-    uncoverTile(b,row,col);
-    if(b[row][col]==0)
+    if(b[row][col]<9)
+        return 0;
+    else if(b[row][col]==10)
     {
+        int sum=1;
+        b[row][col]=0;
         for(int rowT{row-1};rowT<=row+1;rowT++)
             for (int colT{col-1};colT<=col+1;colT++)
-                if( rowT<b.getRows() && 
-                    rowT>=0   &&
-                    colT<b.getCols() &&
-                    colT>=0   &&
-                    b[rowT][colT]==9)
-                        count++;
+                if (colT>=0         &&
+                    colT<b.getCols()&&
+                    rowT>=0         &&
+                    rowT<b.getRows()&&
+                    (rowT != row || colT != col)
+                   )
+                {
+                   sum+= updateTile(b,rowT,colT);    
+                }
+        
+        return sum;
     }
+    else
+    {
+        b[row][col]-=10;
+        return 1;
+    }
+    
 }
 
 bool updateBoard(Board &b,Point &m)
 {
     if(b[m]==19)
         return true;
-
-
-
+    
+    b.addUncovered(updateTile(b,m.row,m.col));
     return false;
 }
 
@@ -229,6 +254,11 @@ int main(int argc, char const *argv[])
         printBoard(board);
         coordinates = getInput();
         isGameOver = updateBoard(board,coordinates);
+        if(board.czyWygrana())
+        {
+            std::cout<<"Wygrana!\n";
+            break;
+        }
         
     }
     uncoverBoard(board);
